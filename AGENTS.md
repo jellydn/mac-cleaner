@@ -10,17 +10,17 @@ Native macOS desktop app built on **Native SDK** (Zig 0.16 + `native_sdk`). The 
 - `src/app.native` is the **entire UI**. Embedded via `@embedFile` and watched under `native dev`.
 - Logic is split across modules (keep it that way):
 
-| File | Role |
-|------|------|
-| `src/main.zig` | App wiring only (`UiApp`, runner, re-exports) |
-| `src/model.zig` | `Model`, `Tab`, `JobKind`, `SudoPhase`, rows, view helpers |
-| `src/update.zig` | `Msg`, `boot`, `update` |
-| `src/mole.zig` | Mole path (Homebrew then `$PATH`) + status/history/job spawns |
-| `src/sudo.zig` | Session sudo grant + keepalive |
-| `src/status_json.zig` | Parse Mole status/history JSON |
-| `src/effect_handlers.zig` | Pure status/history/job exit handlers (unit-tested) |
-| `src/bounded_str.zig` | Fixed-capacity strings for model fields |
-| `src/scripts/*.sh` | Embedded grant/probe scripts |
+| File                      | Role                                                          |
+| ------------------------- | ------------------------------------------------------------- |
+| `src/main.zig`            | App wiring only (`UiApp`, runner, re-exports)                 |
+| `src/model.zig`           | `Model`, `Tab`, `JobKind`, `SudoPhase`, rows, view helpers    |
+| `src/update.zig`          | `Msg`, `boot`, `update`                                       |
+| `src/mole.zig`            | Mole path (Homebrew then `$PATH`) + status/history/job spawns |
+| `src/sudo.zig`            | Session sudo grant + keepalive                                |
+| `src/status_json.zig`     | Parse Mole status/history JSON                                |
+| `src/effect_handlers.zig` | Pure status/history/job exit handlers (unit-tested)           |
+| `src/bounded_str.zig`     | Fixed-capacity strings for model fields                       |
+| `src/scripts/*.sh`        | Embedded grant/probe scripts                                  |
 
 - `mole_available` on Model gates actions and spawns when Mole is missing.
 - Job log lines pass through `stripAnsi` in `appendLog`.
