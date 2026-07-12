@@ -1,0 +1,26 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Native SDK CLI
+        run: npm install -g @native-sdk/cli
+
+      - name: native check
+        run: native check
+
+      - name: native test
+        run: native test --yes

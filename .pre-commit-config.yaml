@@ -1,0 +1,22 @@
+# See https://prek.j178.dev for more information.
+# Hooks run on `git commit`; also run everything via: prek run --all-files
+repos:
+  - repo: local
+    hooks:
+      - id: native-check
+        name: native check (markup + app.zon)
+        entry: native check
+        language: system
+        pass_filenames: false
+        # always_run: true is implied when pass_filenames is false
+      - id: native-test
+        name: native test (headless UI + JSON parse)
+        entry: native test
+        language: system
+        pass_filenames: false
+      - id: zig-fmt
+        name: zig fmt --check
+        entry: zig fmt --check
+        language: system
+        types: [zig]
+        files: \.zig$
