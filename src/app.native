@@ -1,0 +1,291 @@
+<!-- Mac Cleaner — dashboard over the Mole CLI -->
+<column background="background">
+  <row height="{header_height}" padding="12" gap="10" cross="center"
+       background="surface" window-drag="true" label="Header">
+    <spacer width="{chrome_leading}" />
+    <column gap="2" grow="1">
+      <text size="heading">Mac Cleaner</text>
+      <text foreground="text_muted">Powered by Mole · {molePath}</text>
+    </column>
+    <if test="{statusBusy}">
+      <badge>Refreshing…</badge>
+    </if>
+    <else>
+      <button size="sm" variant="ghost" on-press="refresh_status" disabled="{actionsDisabled}">Refresh</button>
+    </else>
+  </row>
+  <separator />
+
+  <row padding="12" gap="8" cross="center">
+    <tabs gap="6">
+      <button size="sm" selected="{isOverview}" on-press="set_tab:{overviewTab}">Overview</button>
+      <button size="sm" selected="{isClean}" on-press="set_tab:{cleanTab}">Clean</button>
+      <button size="sm" selected="{isHistory}" on-press="set_tab:{historyTab}">History</button>
+    </tabs>
+    <spacer grow="1" />
+    <if test="{job_running}">
+      <badge>{jobTitle}</badge>
+      <button size="sm" variant="secondary" on-press="cancel_job">Cancel</button>
+    </if>
+  </row>
+
+  <!-- Overview -->
+  <if test="{isOverview}">
+    <scroll grow="1">
+      <column gap="14" padding="16">
+        <if test="{showStatusError}">
+          <text foreground="destructive" wrap="true">{healthMsg}</text>
+        </if>
+        <card background="surface" radius="lg" padding="16">
+          <column gap="10">
+            <row gap="12" cross="center">
+              <column gap="4" grow="1">
+                <text foreground="text_muted">Health score</text>
+                <text size="display">{healthScoreText}</text>
+                <text>{healthMsg}</text>
+              </column>
+              <column gap="4" width="180">
+                <text foreground="text_muted">Host</text>
+                <text>{hostText}</text>
+                <text foreground="text_muted">Hardware</text>
+                <text wrap="true">{hardwareText}</text>
+                <text foreground="text_muted">Uptime</text>
+                <text>{uptimeText}</text>
+              </column>
+            </row>
+            <text foreground="text_muted">Collected {collectedText}</text>
+          </column>
+        </card>
+
+        <row gap="10">
+          <card background="surface" radius="md" padding="14" grow="1">
+            <column gap="6">
+              <text foreground="text_muted">Disk</text>
+              <text size="heading">{diskText}</text>
+              <text foreground="text_muted">{diskDetail}</text>
+              <progress value="{diskProgress}" />
+            </column>
+          </card>
+          <card background="surface" radius="md" padding="14" grow="1">
+            <column gap="6">
+              <text foreground="text_muted">Memory</text>
+              <text size="heading">{memText}</text>
+              <text foreground="text_muted">System RAM in use</text>
+              <progress value="{memProgress}" />
+            </column>
+          </card>
+          <card background="surface" radius="md" padding="14" grow="1">
+            <column gap="6">
+              <text foreground="text_muted">CPU</text>
+              <text size="heading">{cpuText}</text>
+              <text foreground="text_muted">Load 1m · {loadText}</text>
+              <progress value="{cpuProgress}" />
+            </column>
+          </card>
+          <card background="surface" radius="md" padding="14" grow="1">
+            <column gap="6">
+              <text foreground="text_muted">Battery</text>
+              <text size="heading">{batteryPctText}</text>
+              <text foreground="text_muted">{batteryText}</text>
+            </column>
+          </card>
+        </row>
+
+        <row gap="10">
+          <card background="surface" radius="md" padding="14" grow="1">
+            <column gap="4">
+              <text foreground="text_muted">Trash</text>
+              <text size="heading">{trashText}</text>
+              <text foreground="text_muted">macOS Trash size</text>
+            </column>
+          </card>
+          <card background="surface" radius="md" padding="14" grow="2">
+            <column gap="6">
+              <text size="heading">Quick actions</text>
+              <text foreground="text_muted" wrap="true">
+                Dry-runs only preview. Full system caches may need sudo in Terminal: sudo -v && mo clean
+              </text>
+              <row gap="8">
+                <button variant="primary" on-press="set_tab:{cleanTab}">Open Clean</button>
+                <button variant="secondary" on-press="start_clean_dry" disabled="{actionsDisabled}">Quick dry-run clean</button>
+                <button variant="ghost" on-press="start_purge_dry" disabled="{actionsDisabled}">Purge dry-run</button>
+              </row>
+            </column>
+          </card>
+        </row>
+
+        <column gap="8">
+          <row gap="8" cross="center">
+            <text grow="1" size="heading">Top processes</text>
+            <button size="sm" variant="ghost" on-press="refresh_status" disabled="{statusBusy}">Reload</button>
+          </row>
+          <card background="surface" radius="md" padding="8">
+            <column gap="2">
+              <for each="topProcesses" as="p">
+                <row gap="10" padding="8" cross="center">
+                  <text grow="1">{p.nameText}</text>
+                  <badge>{p.cpuText}</badge>
+                  <text foreground="text_muted" width="72">{p.memText}</text>
+                </row>
+                <separator />
+              </for>
+              <else>
+                <if test="{showEmptyProcs}">
+                  <text padding="12" foreground="text_muted">No process data yet.</text>
+                </if>
+                <else>
+                  <row padding="12" gap="8" cross="center">
+                    <spinner />
+                    <text foreground="text_muted">Loading processes…</text>
+                  </row>
+                </else>
+              </else>
+            </column>
+          </card>
+        </column>
+      </column>
+    </scroll>
+  </if>
+
+  <!-- Clean -->
+  <if test="{isClean}">
+    <column grow="1" gap="12" padding="16">
+      <card background="surface" radius="md" padding="14">
+        <column gap="12">
+          <text size="heading">Mole actions</text>
+          <text foreground="text_muted" wrap="true">
+            Runs the Mole CLI on this Mac. Prefer dry-run first — it previews without deleting.
+            Installer / uninstall stay interactive in Terminal (mo installer, mo uninstall).
+          </text>
+
+          <card background="surface_subtle" radius="md" padding="12">
+            <column gap="8">
+              <row gap="8" cross="center">
+                <text grow="1">{sudoStatusText}</text>
+                <if test="{showSudoActive}">
+                  <badge>Admin active</badge>
+                </if>
+                <if test="{showSudoPrompting}">
+                  <spinner />
+                  <badge>Prompting…</badge>
+                </if>
+              </row>
+              <text foreground="text_muted" wrap="true">
+                Grant admin once so Mole can clean system caches without asking every run.
+                The app keeps the session alive while it is open.
+              </text>
+              <if test="{showSudoIdle}">
+                <button variant="primary" on-press="grant_sudo" disabled="{actionsDisabled}">Grant admin once</button>
+              </if>
+            </column>
+          </card>
+
+          <column gap="6">
+            <text foreground="text_muted">Clean · free disk (caches, logs, leftovers)</text>
+            <row gap="8">
+              <button variant="primary" on-press="start_clean_dry" disabled="{actionsDisabled}">Clean · dry-run</button>
+              <button variant="secondary" on-press="start_clean_run" disabled="{actionsDisabled}">Clean · run</button>
+            </row>
+          </column>
+
+          <column gap="6">
+            <text foreground="text_muted">Optimize · refresh caches and services</text>
+            <row gap="8">
+              <button variant="secondary" on-press="start_optimize_dry" disabled="{actionsDisabled}">Optimize · dry-run</button>
+              <button variant="ghost" on-press="start_optimize_run" disabled="{actionsDisabled}">Optimize · run</button>
+            </row>
+          </column>
+
+          <column gap="6">
+            <text foreground="text_muted">Purge · old project build artifacts</text>
+            <row gap="8">
+              <button variant="secondary" on-press="start_purge_dry" disabled="{actionsDisabled}">Purge · dry-run</button>
+              <button variant="ghost" on-press="start_purge_run" disabled="{actionsDisabled}">Purge · run</button>
+            </row>
+          </column>
+
+          <text>{jobSummary}</text>
+        </column>
+      </card>
+
+      <if test="{showConfirm}">
+        <card background="surface" radius="md" padding="14">
+          <column gap="10">
+            <text size="heading" foreground="destructive">{confirmTitle}</text>
+            <text wrap="true">{confirmBody}</text>
+            <row gap="8">
+              <button variant="primary" on-press="confirm_pending_job">Yes, continue</button>
+              <button variant="ghost" on-press="cancel_confirm">Cancel</button>
+            </row>
+          </column>
+        </card>
+      </if>
+
+      <column gap="6" grow="1">
+        <row gap="8" cross="center">
+          <text grow="1" size="heading">Job log</text>
+          <if test="{job_running}">
+            <spinner />
+            <text foreground="text_muted">{jobTitle}</text>
+          </if>
+        </row>
+        <scroll grow="1">
+          <card background="surface_subtle" radius="md" padding="10">
+            <column gap="2">
+              <for each="logRows" as="line">
+                <text wrap="true">{line.content}</text>
+              </for>
+              <else>
+                <if test="{showEmptyLog}">
+                  <text foreground="text_muted" padding="8">Start a dry-run to stream Mole output here.</text>
+                </if>
+              </else>
+            </column>
+          </card>
+        </scroll>
+      </column>
+    </column>
+  </if>
+
+  <!-- History -->
+  <if test="{isHistory}">
+    <column grow="1" gap="12" padding="16">
+      <row gap="8" cross="center">
+        <text grow="1" size="heading">Recent Mole sessions</text>
+        <button size="sm" variant="ghost" on-press="refresh_history" disabled="{history_loading}">Reload</button>
+      </row>
+      <if test="{history_loading}">
+        <row gap="8" cross="center">
+          <spinner />
+          <text foreground="text_muted">Loading history…</text>
+        </row>
+      </if>
+      <if test="{history_error}">
+        <text foreground="destructive">Could not load history. Is Mole installed?</text>
+      </if>
+      <scroll grow="1">
+        <column gap="6">
+          <for each="historyRows" as="h">
+            <card background="surface" radius="md" padding="12">
+              <row gap="10" cross="center">
+                <column gap="4" grow="1">
+                  <text>{h.commandText}</text>
+                  <text foreground="text_muted">{h.whenText}</text>
+                  <text foreground="text_muted">{h.itemsText}</text>
+                </column>
+                <badge>{h.sizeText}</badge>
+              </row>
+            </card>
+          </for>
+          <else>
+            <if test="{showEmptyHistory}">
+              <text foreground="text_muted">No cleanup sessions yet.</text>
+            </if>
+          </else>
+        </column>
+      </scroll>
+    </column>
+  </if>
+
+  <status-bar>{statusBar}</status-bar>
+</column>
